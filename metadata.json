@@ -1,0 +1,6 @@
+{
+  "name": "Attendance",
+  "description": "Smart Attendance Tracker & Timetable Management for B.Tech Handloom & Textile Technology.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

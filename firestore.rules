@@ -1,0 +1,148 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function isValidId(id) {
+      return id is string && id.size() <= 128 && id.matches('^[a-zA-Z0-9_\\-]+$');
+    }
+
+    function incoming() {
+      return request.resource.data;
+    }
+
+    function existing() {
+      return resource.data;
+    }
+
+    function isValidUserProfile(data) {
+      return data.userId is string && data.userId == request.auth.uid &&
+             data.studentName is string && data.studentName.size() >= 1 && data.studentName.size() <= 100 &&
+             (!('rollNumber' in data) || data.rollNumber == null || (data.rollNumber is string && data.rollNumber.size() <= 50)) &&
+             (!('college' in data) || data.college == null || (data.college is string && data.college.size() <= 150)) &&
+             (!('branch' in data) || data.branch == null || (data.branch is string && data.branch.size() <= 100)) &&
+             (!('semester' in data) || data.semester == null || (data.semester is string && data.semester.size() <= 50)) &&
+             (!('academicYear' in data) || data.academicYear == null || (data.academicYear is string && data.academicYear.size() <= 50)) &&
+             (!('targetPercentage' in data) || data.targetPercentage == null || (data.targetPercentage is number && data.targetPercentage >= 0 && data.targetPercentage <= 100)) &&
+             (!('selectedBatch' in data) || data.selectedBatch == null || (data.selectedBatch is string && (data.selectedBatch == 'Batch A' || data.selectedBatch == 'Batch B'))) &&
+             (!('electiveChoice' in data) || data.electiveChoice == null || (data.electiveChoice is string && data.electiveChoice.size() <= 150)) &&
+             (!('themeMode' in data) || data.themeMode == null || (data.themeMode is string && (data.themeMode == 'system' || data.themeMode == 'light' || data.themeMode == 'dark'))) &&
+             data.createdAt is timestamp && data.createdAt <= request.time &&
+             data.updatedAt is timestamp && data.updatedAt <= request.time;
+    }
+
+    function isValidAttendanceRecord(data) {
+      return data.userId is string && data.userId == request.auth.uid &&
+             data.date is string && data.date.size() == 10 && data.date.matches('^\\d{4}-\\d{2}-\\d{2}$') &&
+             data.period is int && data.period >= 1 && data.period <= 8 &&
+             data.status is string && (data.status == 'PRESENT' || data.status == 'ABSENT' || data.status == 'CANCELLED' || data.status == 'UNMARKED') &&
+             (!('subjectCode' in data) || data.subjectCode == null || (data.subjectCode is string && data.subjectCode.size() <= 50)) &&
+             (!('subjectName' in data) || data.subjectName == null || (data.subjectName is string && data.subjectName.size() <= 150)) &&
+             (!('topic' in data) || data.topic == null || (data.topic is string && data.topic.size() <= 300)) &&
+             (!('note' in data) || data.note == null || (data.note is string && data.note.size() <= 500)) &&
+             (!('markedAt' in data) || data.markedAt == null || (data.markedAt is string && data.markedAt.size() <= 100)) &&
+             data.createdAt is timestamp && data.createdAt <= request.time &&
+             data.updatedAt is timestamp && data.updatedAt <= request.time;
+    }
+
+    function isValidTimetableSlot(data) {
+      return data.userId is string && data.userId == request.auth.uid &&
+             data.dayOfWeek is int && data.dayOfWeek >= 1 && data.dayOfWeek <= 7 &&
+             data.period is int && data.period >= 1 && data.period <= 8 &&
+             data.subjectCode is string && data.subjectCode.size() <= 50 &&
+             (!('subjectName' in data) || data.subjectName == null || (data.subjectName is string && data.subjectName.size() <= 150)) &&
+             (!('batch' in data) || data.batch == null || (data.batch is string && data.batch.size() <= 50)) &&
+             (!('room' in data) || data.room == null || (data.room is string && data.room.size() <= 50)) &&
+             (!('classType' in data) || data.classType == null || (data.classType is string && data.classType.size() <= 50)) &&
+             (!('startTime' in data) || data.startTime == null || (data.startTime is string && data.startTime.size() <= 20)) &&
+             (!('endTime' in data) || data.endTime == null || (data.endTime is string && data.endTime.size() <= 20)) &&
+             data.createdAt is timestamp && data.createdAt <= request.time &&
+             data.updatedAt is timestamp && data.updatedAt <= request.time;
+    }
+
+    function isValidDateOverride(data) {
+      return data.userId is string && data.userId == request.auth.uid &&
+             data.date is string && data.date.size() == 10 && data.date.matches('^\\d{4}-\\d{2}-\\d{2}$') &&
+             (!('isHoliday' in data) || data.isHoliday is bool) &&
+             (!('holidayReason' in data) || data.holidayReason == null || (data.holidayReason is string && data.holidayReason.size() <= 200)) &&
+             (!('isCustomSchedule' in data) || data.isCustomSchedule is bool) &&
+             data.createdAt is timestamp && data.createdAt <= request.time &&
+             data.updatedAt is timestamp && data.updatedAt <= request.time;
+    }
+
+    match /users/{userId} {
+      allow get: if isSignedIn() && request.auth.uid == userId;
+      allow list: if isSignedIn() && request.auth.uid == userId;
+      allow create: if isSignedIn() && request.auth.uid == userId && isValidId(userId) &&
+                       incoming().userId == request.auth.uid &&
+                       incoming().createdAt is timestamp &&
+                       incoming().updatedAt is timestamp &&
+                       isValidUserProfile(incoming());
+      allow update: if isSignedIn() && request.auth.uid == userId && isValidId(userId) &&
+                       incoming().userId == existing().userId &&
+                       incoming().createdAt == existing().createdAt &&
+                       incoming().updatedAt is timestamp &&
+                       incoming().updatedAt <= request.time &&
+                       isValidUserProfile(incoming());
+      allow delete: if isSignedIn() && request.auth.uid == userId && isValidId(userId);
+
+      match /records/{recordId} {
+        allow get: if isSignedIn() && request.auth.uid == userId;
+        allow list: if isSignedIn() && request.auth.uid == userId;
+        allow create: if isSignedIn() && request.auth.uid == userId && isValidId(recordId) &&
+                         incoming().userId == request.auth.uid &&
+                         incoming().createdAt is timestamp &&
+                         incoming().updatedAt is timestamp &&
+                         isValidAttendanceRecord(incoming());
+        allow update: if isSignedIn() && request.auth.uid == userId && isValidId(recordId) &&
+                         incoming().userId == existing().userId &&
+                         incoming().createdAt == existing().createdAt &&
+                         incoming().updatedAt is timestamp &&
+                         incoming().updatedAt <= request.time &&
+                         isValidAttendanceRecord(incoming());
+        allow delete: if isSignedIn() && request.auth.uid == userId && isValidId(recordId);
+      }
+
+      match /timetable/{slotId} {
+        allow get: if isSignedIn() && request.auth.uid == userId;
+        allow list: if isSignedIn() && request.auth.uid == userId;
+        allow create: if isSignedIn() && request.auth.uid == userId && isValidId(slotId) &&
+                         incoming().userId == request.auth.uid &&
+                         incoming().createdAt is timestamp &&
+                         incoming().updatedAt is timestamp &&
+                         isValidTimetableSlot(incoming());
+        allow update: if isSignedIn() && request.auth.uid == userId && isValidId(slotId) &&
+                         incoming().userId == existing().userId &&
+                         incoming().createdAt == existing().createdAt &&
+                         incoming().updatedAt is timestamp &&
+                         incoming().updatedAt <= request.time &&
+                         isValidTimetableSlot(incoming());
+        allow delete: if isSignedIn() && request.auth.uid == userId && isValidId(slotId);
+      }
+
+      match /overrides/{dateId} {
+        allow get: if isSignedIn() && request.auth.uid == userId;
+        allow list: if isSignedIn() && request.auth.uid == userId;
+        allow create: if isSignedIn() && request.auth.uid == userId && isValidId(dateId) &&
+                         incoming().userId == request.auth.uid &&
+                         incoming().createdAt is timestamp &&
+                         incoming().updatedAt is timestamp &&
+                         isValidDateOverride(incoming());
+        allow update: if isSignedIn() && request.auth.uid == userId && isValidId(dateId) &&
+                         incoming().userId == existing().userId &&
+                         incoming().createdAt == existing().createdAt &&
+                         incoming().updatedAt is timestamp &&
+                         incoming().updatedAt <= request.time &&
+                         isValidDateOverride(incoming());
+        allow delete: if isSignedIn() && request.auth.uid == userId && isValidId(dateId);
+      }
+    }
+  }
+}

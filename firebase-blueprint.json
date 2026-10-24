@@ -1,0 +1,237 @@
+{
+  "entities": {
+    "UserProfile": {
+      "title": "UserProfile",
+      "description": "Student profile, preferences, and theme configuration",
+      "type": "object",
+      "properties": {
+        "userId": {
+          "type": "string",
+          "description": "Unique user ID matching auth.uid"
+        },
+        "studentName": {
+          "type": "string",
+          "description": "Name of the student"
+        },
+        "rollNumber": {
+          "type": "string",
+          "description": "Student roll or enrollment number"
+        },
+        "college": {
+          "type": "string",
+          "description": "College name"
+        },
+        "branch": {
+          "type": "string",
+          "description": "Academic branch (Handloom & Textile Technology)"
+        },
+        "semester": {
+          "type": "string",
+          "description": "Current semester (e.g., 5th Semester)"
+        },
+        "academicYear": {
+          "type": "string",
+          "description": "Academic session year (2026-27)"
+        },
+        "targetPercentage": {
+          "type": "number",
+          "description": "Target attendance percentage (default 75)"
+        },
+        "selectedBatch": {
+          "type": "string",
+          "enum": ["Batch A", "Batch B"],
+          "description": "Selected lab/seminar batch"
+        },
+        "electiveChoice": {
+          "type": "string",
+          "description": "Selected elective subject choice"
+        },
+        "themeMode": {
+          "type": "string",
+          "enum": ["system", "light", "dark"],
+          "description": "Dark mode user preference"
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Server timestamp of document creation"
+        },
+        "updatedAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Server timestamp of last update"
+        }
+      },
+      "required": ["userId", "studentName", "createdAt", "updatedAt"]
+    },
+    "AttendanceRecord": {
+      "title": "AttendanceRecord",
+      "description": "Attendance status logged for a specific period on a specific date",
+      "type": "object",
+      "properties": {
+        "userId": {
+          "type": "string",
+          "description": "Owner user ID"
+        },
+        "date": {
+          "type": "string",
+          "description": "Date string in YYYY-MM-DD format"
+        },
+        "period": {
+          "type": "number",
+          "description": "Period index from 1 to 8"
+        },
+        "subjectCode": {
+          "type": "string",
+          "description": "Course or subject code (e.g. BHT501)"
+        },
+        "subjectName": {
+          "type": "string",
+          "description": "Full course name"
+        },
+        "status": {
+          "type": "string",
+          "enum": ["PRESENT", "ABSENT", "CANCELLED", "UNMARKED"],
+          "description": "Attendance status"
+        },
+        "topic": {
+          "type": "string",
+          "description": "Class topic or lecture details"
+        },
+        "note": {
+          "type": "string",
+          "description": "Personal remarks"
+        },
+        "markedAt": {
+          "type": "string",
+          "description": "ISO timestamp string of when marked"
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Server timestamp of creation"
+        },
+        "updatedAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Server timestamp of update"
+        }
+      },
+      "required": ["userId", "date", "period", "status", "createdAt", "updatedAt"]
+    },
+    "TimetableSlot": {
+      "title": "TimetableSlot",
+      "description": "Customized or user-specific timetable slot",
+      "type": "object",
+      "properties": {
+        "userId": {
+          "type": "string",
+          "description": "Owner user ID"
+        },
+        "dayOfWeek": {
+          "type": "number",
+          "description": "Day of week 1 (Monday) to 7 (Sunday)"
+        },
+        "period": {
+          "type": "number",
+          "description": "Period 1 to 8"
+        },
+        "subjectCode": {
+          "type": "string",
+          "description": "Subject code"
+        },
+        "subjectName": {
+          "type": "string",
+          "description": "Subject title"
+        },
+        "batch": {
+          "type": "string",
+          "description": "Batch specification: ALL, Batch A, or Batch B"
+        },
+        "room": {
+          "type": "string",
+          "description": "Classroom or lab location"
+        },
+        "classType": {
+          "type": "string",
+          "description": "LECTURE, LAB, TUTORIAL, ACTIVITY, or BREAK"
+        },
+        "startTime": {
+          "type": "string",
+          "description": "Start time HH:MM"
+        },
+        "endTime": {
+          "type": "string",
+          "description": "End time HH:MM"
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Server timestamp"
+        },
+        "updatedAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Server timestamp"
+        }
+      },
+      "required": ["userId", "dayOfWeek", "period", "subjectCode", "createdAt", "updatedAt"]
+    },
+    "DateOverride": {
+      "title": "DateOverride",
+      "description": "Holiday or schedule exception for a specific date",
+      "type": "object",
+      "properties": {
+        "userId": {
+          "type": "string",
+          "description": "Owner user ID"
+        },
+        "date": {
+          "type": "string",
+          "description": "Date string in YYYY-MM-DD"
+        },
+        "isHoliday": {
+          "type": "boolean",
+          "description": "Whether the day is an institute holiday"
+        },
+        "holidayReason": {
+          "type": "string",
+          "description": "Reason for holiday"
+        },
+        "isCustomSchedule": {
+          "type": "boolean",
+          "description": "Whether the day uses a swapped schedule"
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Server timestamp"
+        },
+        "updatedAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Server timestamp"
+        }
+      },
+      "required": ["userId", "date", "createdAt", "updatedAt"]
+    }
+  },
+  "firestore": {
+    "/users/{userId}": {
+      "schema": { "$ref": "#/entities/UserProfile" },
+      "description": "Student user profile and app preferences"
+    },
+    "/users/{userId}/records/{recordId}": {
+      "schema": { "$ref": "#/entities/AttendanceRecord" },
+      "description": "Attendance log records per period and date"
+    },
+    "/users/{userId}/timetable/{slotId}": {
+      "schema": { "$ref": "#/entities/TimetableSlot" },
+      "description": "User custom timetable slots"
+    },
+    "/users/{userId}/overrides/{dateId}": {
+      "schema": { "$ref": "#/entities/DateOverride" },
+      "description": "Date overrides for holidays or custom schedule"
+    }
+  }
+}
